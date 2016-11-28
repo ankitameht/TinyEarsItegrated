@@ -66,6 +66,8 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
     private RelativeLayout mLayout;
     private LineChart mChart;
 
+    int maxAmplitude = 0;
+
     Thread thread = null;
 
     CountDownTimer t = new CountDownTimer( Long.MAX_VALUE , 1000) {
@@ -167,12 +169,7 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
         public void run() {
             handler.postDelayed(this, 1);
             if (mRecorder != null) {
-                int maxAmplitude = mRecorder.getMaxAmplitude();
-                if (maxAmplitude != 0) {
-                    // visualizerView.addAmplitude(maxAmplitude);
-                }
-            } else {
-
+               maxAmplitude = mRecorder.getMaxAmplitude();
             }
         }
     };
@@ -369,6 +366,7 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                handler.post(updater);
                                 addEntry();
                             }
                         });
@@ -391,7 +389,8 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
                 data.addDataSet(set);
             }
             data.addXValue("");
-            data.addEntry(new Entry((float)(Math.random()*120), set.getEntryCount()), 0);
+            data.addEntry(new Entry((float)(maxAmplitude), set.getEntryCount()), 0);
+            Log.d(LOG_TAG, String.valueOf(maxAmplitude));
             mChart.notifyDataSetChanged();
             mChart.setVisibleXRange(50);
             mChart.moveViewToX(data.getXValCount() - 11);

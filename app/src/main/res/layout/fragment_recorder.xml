@@ -89,7 +89,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:src="@drawable/ic_menu_camera"
+        android:src="@drawable/cameraicon"
         android:layout_margin="16dp"
         android:layout_gravity="bottom|end"
         app:backgroundTint="@android:color/holo_green_light"

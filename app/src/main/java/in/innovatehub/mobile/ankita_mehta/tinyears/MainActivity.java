@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(LOG_TAG,"Insiade ,oncreate");
+        Log.d(LOG_TAG,"Inside oncreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
