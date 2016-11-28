@@ -1,11 +1,15 @@
 package in.innovatehub.mobile.ankita_mehta.tinyears;
 
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -22,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,8 +48,6 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
     private static String mFullPath = mFilePath + "/" + mFileName;
     String link = "http://192.168.50.0:9000/divide_form";
 
-
-
     private DownloadResultReceiver mReceiver;
 
     private MediaRecorder mRecorder = null;
@@ -58,6 +61,7 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
 
     private Button mShowStatsButton = null;
     private TextView mStopCountTimer = null;
+    private ProgressBar mProgressBar = null;
 
     private RelativeLayout mLayout;
     private LineChart mChart;
@@ -105,6 +109,7 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
         mPlayImageButton = (ImageButton) view.findViewById(R.id.imageButton3);
         mShowStatsButton = (Button) view.findViewById(R.id.showMeStats);
         mStopCountTimer = (TextView) view.findViewById(R.id.stopCountTimer);
+        mProgressBar = (ProgressBar) view.findViewById(R.id.marker_progress);
 
         mRecordImageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -116,6 +121,8 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
                     mRecordImageButton.setImageResource(R.drawable.stopicon);
                     mPlayImageButton.setEnabled(false);
                     mShowStatsButton.setEnabled(false);
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    mShowStatsButton.setVisibility(View.INVISIBLE);
                     //setText("Stop recording");
                 } else {
                     t.cancel();
@@ -123,7 +130,6 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
                     mRecordImageButton.setImageResource(R.drawable.micicon);
                     mPlayImageButton.setEnabled(true);
                     mShowStatsButton.setEnabled(true);
-                    mShowStatsButton.setVisibility(View.VISIBLE);
                     Log.d(LOG_TAG,"calling service setOnClickListener");
                     callServiceIntent(v);
                     //setText("Start recording");
@@ -224,7 +230,7 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mRecorder.setOutputFile(mFilePath + "/" + mFileName);
+        mRecorder.setOutputFile(mFullPath);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         try {
             mRecorder.prepare();
@@ -284,6 +290,19 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
     public void onResume(){
         super.onResume();
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if(!checkInternet()){
+            Intent newIntent = new Intent(getActivity(),ErrorActivity.class);
+            startActivity(newIntent);
+        }
+    }
+
+    boolean checkInternet(){
+        ConnectivityManager cm =
+                (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return isConnected;
     }
 
     public void sendResults(String res) {
@@ -293,12 +312,12 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
     @Override
     public void onPause() {
         super.onPause();
-            if(mRecorder!=null) {
-                mRecorder.stop();     // stop recording
-                mRecorder.reset();    // set state to idle
-                mRecorder.release();  // release resources back to the system
-                mRecorder = null;
-            }
+        if(mRecorder!=null) {
+            mRecorder.stop();     // stop recording
+            mRecorder.reset();    // set state to idle
+            mRecorder.release();  // release resources back to the system
+            mRecorder = null;
+        }
         if (mPlayer != null) {
             mPlayer.stop();     // stop playing
             mPlayer.release();
@@ -321,7 +340,7 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
         }
     }
 
-    protected void realLiveChart(View view){
+    protected void realLiveChart(View view) {
         mLayout = (RelativeLayout) view.findViewById(R.id.live_chart);
         mChart = new LineChart(view.getContext());
         mLayout.addView(mChart);
@@ -336,40 +355,35 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
         mChart.setScaleEnabled(true);
 
         mChart.setDrawGridBackground(false);
-
         mChart.setPinchZoom(true);
-
-        //mChart.setBackgroundColor(Color.WHITE);
 
         LineData data = new LineData();
         data.setValueTextColor(Color.WHITE);
         mChart.setData(data);
-        //  Legend l = mChart.getLegend();
-        //  l.setForm(Legend.LegendForm.LINE);
-        //  l.setTextColor(Color.WHITE);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < 100; i++) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            addEntry();
+        // here you check the value of getActivity() and break up if needed
+        if (getActivity() != null){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 100; i++) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                addEntry();
+                            }
+                        });
+                        try {
+                            Thread.sleep(600);
+                        } catch (InterruptedException e) {
+                            Log.d(LOG_TAG, e.getMessage());
                         }
-                    });
-                    try {
-                        Thread.sleep(600);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
                 }
-            }
-        }).start();
+            }).start();
+        }
     }
     private void addEntry() {
         LineData data = mChart.getData();
-
         if (data != null) {
             LineDataSet set = data.getDataSetByIndex(0);
             if (set == null) {
@@ -378,23 +392,23 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
             }
             data.addXValue("");
             data.addEntry(new Entry((float)(Math.random()*120), set.getEntryCount()), 0);
-
             mChart.notifyDataSetChanged();
             mChart.setVisibleXRange(50);
-
             mChart.moveViewToX(data.getXValCount() - 11);
         }
     }
     private LineDataSet createSet() {
         LineDataSet set = new LineDataSet(null, "spl db");
-        // set.setDrawCubic(true);
-        // set.setCubicIntensity(0.2f);
         set.setLineWidth(2f);
         set.setCircleSize(1f);
         return set;
     }
 
     void callServiceIntent(View view){
+        if(!checkInternet()){
+            Intent newIntent = new Intent(getActivity(),ErrorActivity.class);
+            startActivity(newIntent);
+        }
         /* Starting Download Service */
         mReceiver = new DownloadResultReceiver(new Handler());
         mReceiver.setReceiver(this);
@@ -416,6 +430,8 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
     public void onReceiveResult(int resultCode, Bundle resultData) {
         switch (resultCode) {
             case UploadIntentService.STATUS_RUNNING:
+                mProgressBar.setVisibility(View.VISIBLE);
+                Toast.makeText(getActivity().getApplicationContext(), "Please stay tuned while we process.", Toast.LENGTH_LONG).show();
                 break;
             case UploadIntentService.STATUS_FINISHED:
                 /* Hide progress & extract result from bundle */
@@ -423,7 +439,9 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
                 Log.d(LOG_TAG,"ABle to get res"+results[0]);
                 /* Update ListView with result */
                 Log.d(LOG_TAG,"ABle to get ar");
-
+                mProgressBar.setVisibility(View.INVISIBLE);
+                mShowStatsButton.setVisibility(View.VISIBLE);
+                Toast.makeText(getActivity().getApplicationContext(), "Successfully downloaded.", Toast.LENGTH_LONG).show();
                 break;
             case UploadIntentService.STATUS_ERROR:
                 /* Handle the error */

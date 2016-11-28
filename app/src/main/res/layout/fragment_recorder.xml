@@ -60,7 +60,14 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:layout_gravity="center|center_horizontal"
-            android:orientation="horizontal">
+            android:orientation="vertical">
+            <ProgressBar android:indeterminate="true"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/marker_progress"
+                android:visibility="invisible"
+                style="?android:attr/progressBarStyle"
+                android:layout_gravity="center_vertical|center_horizontal"/>
             <Button
                 android:id="@+id/showMeStats"
                 android:layout_width="wrap_content"

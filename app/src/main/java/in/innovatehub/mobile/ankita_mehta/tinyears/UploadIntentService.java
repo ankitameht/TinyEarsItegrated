@@ -1,8 +1,9 @@
 package in.innovatehub.mobile.ankita_mehta.tinyears;
 
 import android.app.IntentService;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.Context;
+
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.text.TextUtils;
@@ -55,12 +56,12 @@ public class UploadIntentService extends IntentService {
             /* Update UI: Download Service is Running */
                 receiver.send(STATUS_RUNNING, Bundle.EMPTY);
                 try {
-
                     String[] results = downloadData(url,path,mPath);
-
                 /* Sending result back to activity */
                     if (null != results && results.length > 0) {
                         bundle.putStringArray("result", results);
+
+                        // here you are sending progress into ResultReceiver located in your Activity
                         receiver.send(STATUS_FINISHED, bundle);
                     }
                 } catch (Exception e) {

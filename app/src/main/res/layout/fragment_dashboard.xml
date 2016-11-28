@@ -1,13 +1,19 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="in.innovatehub.mobile.ankita_mehta.tinyears.DashboardFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <GridView
+        android:columnWidth="100dp"
+        android:padding="10dp"
+        android:gravity="center_horizontal|center"
+        android:numColumns="3"
+        android:stretchMode="columnWidth"
+        android:id="@+id/gridview1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:clickable="true"
+        android:foregroundGravity="center_horizontal|center">
+    </GridView>
+</RelativeLayout>
 
-</FrameLayout>

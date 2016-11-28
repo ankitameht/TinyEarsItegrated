@@ -1,5 +1,9 @@
 package in.innovatehub.mobile.ankita_mehta.tinyears;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.design.widget.NavigationView;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentManager;
@@ -55,5 +59,32 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         mDrawerToggle.syncState();
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        Log.d(LOG_TAG, "Inside on start");
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        Log.d(LOG_TAG, "Inside on Resume");
+        if(!checkInternet()){
+            Intent newIntent = new Intent(getApplicationContext(),ErrorActivity.class);
+            startActivity(newIntent);
+        }
+    }
+
+    boolean checkInternet(){
+        ConnectivityManager cm =
+                (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+        return isConnected;
     }
 }

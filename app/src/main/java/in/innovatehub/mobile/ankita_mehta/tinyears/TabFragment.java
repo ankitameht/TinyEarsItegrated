@@ -1,6 +1,10 @@
 package in.innovatehub.mobile.ankita_mehta.tinyears;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -42,6 +46,10 @@ public class TabFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        if(!checkInternet()){
+            Intent newIntent = new Intent(getActivity(),ErrorActivity.class);
+            startActivity(newIntent);
+        }
     }
 
     @Override
@@ -49,5 +57,15 @@ public class TabFragment extends Fragment {
         super.onDetach();
 
     }
+
+    boolean checkInternet(){
+        ConnectivityManager cm =
+                (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return isConnected;
+    }
+
 
 }
