@@ -35,6 +35,8 @@ public class UploadIntentService extends IntentService {
     public static final int STATUS_FINISHED = 1;
     public static final int STATUS_ERROR = 2;
 
+    public static String URL = "";
+
     private static final String TAG = "UploadIntentService";
 
     public UploadIntentService() {
@@ -49,14 +51,16 @@ public class UploadIntentService extends IntentService {
             String url = intent.getStringExtra("url");
             String path = intent.getStringExtra("filepath");
             String mPath = intent.getStringExtra("directory");
-
+            String mMac = intent.getStringExtra("macid");
+            String mRoomId = intent.getStringExtra("roomid");
 
             Bundle bundle = new Bundle();
             if (!TextUtils.isEmpty(url)) {
             /* Update UI: Download Service is Running */
                 receiver.send(STATUS_RUNNING, Bundle.EMPTY);
                 try {
-                    String[] results = downloadData(url,path,mPath);
+                    URL = url;
+                    String[] results = downloadData(url,path,mPath,mMac,mRoomId);
                 /* Sending result back to activity */
                     if (null != results && results.length > 0) {
                         bundle.putStringArray("result", results);
@@ -117,22 +121,30 @@ public class UploadIntentService extends IntentService {
         return sb.toString();
     }
 
-    private String[] downloadData(String requestUrl,String path, String dir) throws IOException {
+    private String[] downloadData(String requestUrl,String path, String dir, String mMac, String mRoomId) throws IOException {
         String[] results = new String[1];
+        String encoded = "";
         //THIS IS FILE ENCODING CODE
-        File file = new File(path);
-        byte[] bytes = FileUtils.readFileToByteArray(file);
-        String encoded = Base64.encodeToString(bytes, 0);
-        Log.d("~~~~~~~~ Encoded: ", encoded);
-        writeToFile(encoded,dir);
+        try {
+            File file = new File(path);
+            byte[] bytes = FileUtils.readFileToByteArray(file);
+            encoded = Base64.encodeToString(bytes, 0);
+            Log.d("~~~~~~~~ Encoded: ", encoded);
+            writeToFile(encoded, dir);
+        }catch(Exception e){
+            Log.d(TAG,"Error"+e.getMessage());
+        }
         //THIS IS URL CONN CODE
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(requestUrl);
         try {
             // Add your data
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-            nameValuePairs.add(new BasicNameValuePair("Name", "StackOverFlow"));
-            nameValuePairs.add(new BasicNameValuePair("Date", encoded));
+            nameValuePairs.add(new BasicNameValuePair("macid", mMac));
+            nameValuePairs.add(new BasicNameValuePair("mp3", encoded));
+            nameValuePairs.add(new BasicNameValuePair("roomid", mRoomId));
+            nameValuePairs.add(new BasicNameValuePair("whichrec", "overall"));
+            nameValuePairs.add(new BasicNameValuePair("category", "daily"));
             httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
             // Execute HTTP Post Request
@@ -145,7 +157,7 @@ public class UploadIntentService extends IntentService {
                 Log.d(TAG,"service results"+results[0]);
             }else{
                 //handle code 500
-                String sb = "Unable to get your results.\nTry again!";
+                String sb = "Unable to get your results. Try again!";
                 results[0] = sb;
                 Log.d(TAG, "MESSAGE NOW" + sb);
             }

@@ -4,6 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import static in.innovatehub.mobile.ankita_mehta.tinyears.MainActivity.flag;
 import static in.innovatehub.mobile.ankita_mehta.tinyears.TabFragment.int_items;
 
 /**
@@ -11,16 +12,22 @@ import static in.innovatehub.mobile.ankita_mehta.tinyears.TabFragment.int_items;
  */
 
 public class TabFragmentAdapter extends FragmentPagerAdapter {
+
     public TabFragmentAdapter(FragmentManager fm) {
         super(fm);
     }
     @Override
     public Fragment getItem(int position) {
-        switch (position){
-            case 0 : return new DashboardFragment();
-            case 1 : return new RecorderFragment();
-            case 2 : return new AnalyticFragment();
-        }
+            switch (position) {
+                case 0:
+                    return new DashboardFragment();
+                case 1:
+                    return new RecorderFragment();
+                case 2:
+                    return new RecentFragment();
+                case 3:
+                    return new AnalyticFragment();
+            }
         return null;
     }
 
@@ -41,6 +48,8 @@ public class TabFragmentAdapter extends FragmentPagerAdapter {
             case 1 :
                 return "Recording";
             case 2 :
+                return "Recent Activity";
+            case 3 :
                 return "Analytics";
         }
         return null;

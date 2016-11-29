@@ -15,11 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.design.widget.TabLayout;
 
+import static in.innovatehub.mobile.ankita_mehta.tinyears.MainActivity.flag;
+
 
 public class TabFragment extends Fragment {
     public static TabLayout tabLayout;
     public static ViewPager viewPager;
-    public static int int_items = 3 ;
+    public static int int_items = 4 ;
 
 
     @Override
@@ -30,10 +32,22 @@ public class TabFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View x = inflater.inflate(R.layout.fragment_tab,null);
+        View x = inflater.inflate(R.layout.fragment_tab,container,false);
         tabLayout = (TabLayout) x.findViewById(R.id.tabs);
         viewPager = (ViewPager) x.findViewById(R.id.viewpager);
         viewPager.setAdapter(new TabFragmentAdapter(getChildFragmentManager()));
+        if(flag.equalsIgnoreCase("Dash")){
+            viewPager.setCurrentItem(0);
+        }
+        else if(flag.equalsIgnoreCase("Rec")){
+            viewPager.setCurrentItem(1);
+        }
+        else if(flag.equalsIgnoreCase("Last")){
+            viewPager.setCurrentItem(2);
+        }
+        else if(flag.equalsIgnoreCase("Overall")){
+            viewPager.setCurrentItem(3);
+        }
         tabLayout.post(new Runnable() {
             @Override
             public void run() {

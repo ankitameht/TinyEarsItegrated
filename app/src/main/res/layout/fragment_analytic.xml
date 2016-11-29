@@ -1,39 +1,74 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="in.innovatehub.mobile.ankita_mehta.tinyears.AnalyticFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <LinearLayout
+<ScrollView
+    android:id="@+id/analytics_Result"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent">
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/analytics_LinearLayout"
-        android:gravity="center">
-        <Button
-            android:id="@+id/load_last_results"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Last"/>
-        <Button
-            android:id="@+id/load_overall_results"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Overall"/>
-    </LinearLayout>
-
-    <LinearLayout
+        android:orientation="vertical"
         android:id="@+id/analytics_Result_LinearLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <TextView
-            android:id="@+id/res_textView"
+        tools:context="in.innovatehub.mobile.ankita_mehta.tinyears.AnalyticFragment">
+        <ProgressBar android:indeterminate="true"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/marker_progress_analytic"
+            android:visibility="invisible"
+            style="?android:attr/progressBarStyle"
+            android:layout_gravity="center_vertical|center_horizontal"/>
+        <LinearLayout
+            android:id="@+id/linear_layout_overall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|center"
+            android:orientation="horizontal"
+            android:layout_marginBottom="50dp"
+            android:gravity="center_horizontal">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/week_btn"
+                android:background="@color/WHITE"
+                android:text="@string/week" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/month"
+                android:id="@+id/month_btn"
+                android:background="@color/WHITE"
+                android:layout_marginLeft="20dp"/>
+           <!-- <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Year"
+                android:id="@+id/year_btn"
+                android:background="#ff4081"
+                android:layout_marginLeft="20dp" />-->
+        </LinearLayout>
+        <com.github.mikephil.charting.charts.LineChart
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:id="@+id/graph" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:id="@+id/graph2" />
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pie3"
+            android:layout_width="match_parent"
+            android:layout_height="300dp" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_analytics"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""/>
+            android:clickable="true"
+            android:src="@drawable/cameraicon"
+            android:layout_margin="16dp"
+            android:layout_gravity="bottom|end"
+            app:backgroundTint="@android:color/holo_green_light"
+            app:rippleColor="?attr/colorButtonNormal"
+            app:elevation="10dp" />
     </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

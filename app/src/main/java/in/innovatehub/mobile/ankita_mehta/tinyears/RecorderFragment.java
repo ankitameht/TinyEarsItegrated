@@ -11,6 +11,8 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
@@ -36,8 +38,16 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
+
+import static in.innovatehub.mobile.ankita_mehta.tinyears.DashboardFragment.roomSelected;
 
 
 public class RecorderFragment extends Fragment implements DownloadResultReceiver.Receiver{
@@ -46,7 +56,7 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
     private static String mFileName = "music.mp3";
     private static String mFilePath = String.valueOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/TinyEars/"));
     private static String mFullPath = mFilePath + "/" + mFileName;
-    String link = "http://192.168.50.0:9000/divide_form";
+    String LastLink = "http://192.168.50.0:5000/divide_form";
 
     private DownloadResultReceiver mReceiver;
 
@@ -74,23 +84,13 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
         Integer cnt = -1;
         @Override
         public void onTick(long millisUntilFinished) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d(LOG_TAG, "Inside CountDownTimer onTick");
-                            cnt++;
-                            long millis = cnt;
-                            int seconds = (int) (millis / 60);
-                            int minutes = seconds / 60;
-                            seconds = seconds % 60;
-                            mStopCountTimer.setText(String.format("%d:%02d:%02d", minutes, seconds, millis));
-                        }
-                    });
-                }
-            }).start();
+            Log.d(LOG_TAG, "Inside CountDownTimer onTick");
+            cnt++;
+            long millis = cnt;
+            int seconds = (int) (millis / 60);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+            mStopCountTimer.setText(String.format("%d:%02d:%02d", minutes, seconds, millis));
         }
 
         @Override
@@ -157,9 +157,6 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
                 mStartPlaying = !mStartPlaying;
             }
         });
-
-        mLayout = (RelativeLayout) view.findViewById(R.id.live_chart);
-        realLiveChart(view);
 
         return view;
     }
@@ -246,26 +243,12 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
             mRecorder.stop();
             mRecorder.release();
             mRecorder = null;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mRecordImageButton.setImageResource(R.drawable.micicon);
-                        }
-                    });
-                }
-            }).start();
+            mRecordImageButton.setImageResource(R.drawable.micicon);
 
             // mStartRecording = true;
         } else {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mRecordImageButton.setImageResource(R.drawable.stopicon);
-                }
-            });
+            mRecordImageButton.setImageResource(R.drawable.stopicon);
+
             // mStartRecording = false;
         }
     }
@@ -337,70 +320,11 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
         }
     }
 
-    protected void realLiveChart(View view) {
-        mLayout = (RelativeLayout) view.findViewById(R.id.live_chart);
-        mChart = new LineChart(view.getContext());
-        mLayout.addView(mChart);
-
-        mChart.setDescription("");
-        mChart.setNoDataTextDescription("No Data for this moment");
-
-        mChart.setHighlightEnabled(true);
-        mChart.setTouchEnabled(true);
-
-        mChart.setDragEnabled(true);
-        mChart.setScaleEnabled(true);
-
-        mChart.setDrawGridBackground(false);
-        mChart.setPinchZoom(true);
-
-        LineData data = new LineData();
-        data.setValueTextColor(Color.WHITE);
-        mChart.setData(data);
-        // here you check the value of getActivity() and break up if needed
-        if (getActivity() != null){
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (int i = 0; i < 100; i++) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                handler.post(updater);
-                                addEntry();
-                            }
-                        });
-                        try {
-                            Thread.sleep(600);
-                        } catch (InterruptedException e) {
-                            Log.d(LOG_TAG, e.getMessage());
-                        }
-                    }
-                }
-            }).start();
-        }
-    }
-    private void addEntry() {
-        LineData data = mChart.getData();
-        if (data != null) {
-            LineDataSet set = data.getDataSetByIndex(0);
-            if (set == null) {
-                set = createSet();
-                data.addDataSet(set);
-            }
-            data.addXValue("");
-            data.addEntry(new Entry((float)(maxAmplitude), set.getEntryCount()), 0);
-            Log.d(LOG_TAG, String.valueOf(maxAmplitude));
-            mChart.notifyDataSetChanged();
-            mChart.setVisibleXRange(50);
-            mChart.moveViewToX(data.getXValCount() - 11);
-        }
-    }
-    private LineDataSet createSet() {
-        LineDataSet set = new LineDataSet(null, "spl db");
-        set.setLineWidth(2f);
-        set.setCircleSize(1f);
-        return set;
+    public String getMacId(){
+        WifiManager manager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = manager.getConnectionInfo();
+        String address = info.getMacAddress();
+        return address;
     }
 
     void callServiceIntent(View view){
@@ -415,11 +339,12 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
         Intent intent = new Intent(getActivity(), UploadIntentService.class);
         Log.d(LOG_TAG,"Inside service setOnClickListener");
         /* Send optional extras to Download IntentService */
-        intent.putExtra("url", link);
+        intent.putExtra("macID",getMacId());
+        intent.putExtra("url", LastLink);
         intent.putExtra("filepath", mFullPath);
         intent.putExtra("directory",mFilePath);
+        intent.putExtra("roomid", roomSelected);
         intent.putExtra("receiver", mReceiver);
-        intent.putExtra("requestId", 101);
 
         getActivity().startService(intent);
         Log.d(LOG_TAG,"Inside service startService");
@@ -435,12 +360,22 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
             case UploadIntentService.STATUS_FINISHED:
                 /* Hide progress & extract result from bundle */
                 String[] results = resultData.getStringArray("result");
-                Log.d(LOG_TAG,"ABle to get res"+results[0]);
+                if (results == null) {
+                    Toast.makeText(getActivity().getApplicationContext(), "Server not responding.", Toast.LENGTH_LONG).show();
+                }else {
+                    Log.d(LOG_TAG, "ABle to get res" + results[0]);
                 /* Update ListView with result */
-                Log.d(LOG_TAG,"ABle to get ar");
-                mProgressBar.setVisibility(View.INVISIBLE);
-                mShowStatsButton.setVisibility(View.VISIBLE);
-                Toast.makeText(getActivity().getApplicationContext(), "Successfully downloaded.", Toast.LENGTH_LONG).show();
+                    Log.d(LOG_TAG, "ABle to get ar");
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    try {
+                        sample(results[0]);
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(getActivity().getApplicationContext(), "Successfully downloaded.", Toast.LENGTH_LONG).show();
+                }
                 break;
             case UploadIntentService.STATUS_ERROR:
                 /* Handle the error */
@@ -449,5 +384,44 @@ public class RecorderFragment extends Fragment implements DownloadResultReceiver
                 Toast.makeText(getActivity().getApplicationContext(), error, Toast.LENGTH_LONG).show();
                 break;
         }
+    }
+
+    public void sample(String json) throws UnsupportedEncodingException, JSONException {
+        TextView t1, t2,t3,t4,t5,t6,t7,t8;
+        t1 = (TextView) getActivity().findViewById(R.id.id1);
+        t2 = (TextView) getActivity().findViewById(R.id.id2);
+        t3 = (TextView) getActivity().findViewById(R.id.id3);
+        t4 = (TextView) getActivity().findViewById(R.id.id4);
+        t5 = (TextView) getActivity().findViewById(R.id.id5);
+        t6 = (TextView) getActivity().findViewById(R.id.id6);
+        t7 = (TextView) getActivity().findViewById(R.id.id7);
+
+       String msg = json.toString();
+        msg = msg.replace("u","");
+        String s1 = Normalizer.normalize(json, Normalizer.Form.NFKD);
+        String regex = Pattern.quote("[\\p{InCombiningDiacriticalMarks}\\p{IsLm}\\p{IsSk}]+");
+
+        String s2 = new String(s1.replaceAll(regex, "").getBytes("ascii"), "ascii");
+        JSONObject msg2 = new JSONObject(msg);
+        JSONObject jsonObj = new JSONObject(msg2.toString());
+        Log.d(" JSON Parsed Data", jsonObj.toString());
+        int count = jsonObj.length();
+        JSONObject rowObj = jsonObj.getJSONObject(String.valueOf(0));
+
+        Log.d("ssss", rowObj.getString("slot"));
+        Log.d("ssss", rowObj.getString("fan_time"));
+        Log.d("ssss", rowObj.getString("energy_consmed"));
+        Log.d("ssss", rowObj.getString("label"));
+        Log.d("ssss", rowObj.getString("money_wasted"));
+        Log.d("ssss", rowObj.getString("hman_time"));
+        Log.d("ssss", rowObj.getString("speed"));
+
+        t1.setText("slot:"+rowObj.getString("slot"));
+        t2.setText("fan_time:"+rowObj.getString("fan_time"));
+        t3.setText("energy_consmed"+rowObj.getString("energy_consmed"));
+        t4.setText("label:"+rowObj.getString("label"));
+        t5.setText("money_wasted:"+rowObj.getString("money_wasted"));
+        t6.setText("human_time:"+rowObj.getString("hman_time"));
+        t7.setText("speed:"+rowObj.getString("speed"));
     }
 }

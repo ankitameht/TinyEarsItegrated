@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.design.widget.NavigationView;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -14,9 +15,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import static in.innovatehub.mobile.ankita_mehta.tinyears.TabFragment.viewPager;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "DownloadService";
+    public static String flag = "";
 
     DrawerLayout mDrawerLayout;
     NavigationView mNavigationView;
@@ -35,17 +39,37 @@ public class MainActivity extends AppCompatActivity {
         mFragmentManager = getSupportFragmentManager();
 
         mFragmentTransaction = mFragmentManager.beginTransaction();
-        mFragmentTransaction.replace(R.id.containerView,new TabFragment()).commit();
+        mFragmentTransaction.replace(R.id.containerView,new TabFragment()).addToBackStack("newfrag").commit();
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
                 mDrawerLayout.closeDrawers();
-
-                if (menuItem.getItemId() == R.id.nav_item_inbox) {
+                int id = menuItem.getItemId();
+                if (id == R.id.nav_item_dash) {
+                    flag = "Dash";
                     Log.d(LOG_TAG,"Loading navugations ,oncreate");
                     FragmentTransaction xfragmentTransaction = mFragmentManager.beginTransaction();
-                    xfragmentTransaction.replace(R.id.containerView, new TabFragment()).commit();
+                    xfragmentTransaction.replace(R.id.containerView, new TabFragment()).addToBackStack("newfrag").commit();
+                   // viewPager.setCurrentItem(0);
+                }
+                else if (id == R.id.nav_item_rec) {
+                    flag = "Rec";
+                    Log.d(LOG_TAG,"Loading navugations ,oncreate");
+                    FragmentTransaction xfragmentTransaction = mFragmentManager.beginTransaction();
+                    xfragmentTransaction.replace(R.id.containerView, new TabFragment()).addToBackStack("newfrag").commit();
+                }
+                else if (id == R.id.nav_item_last) {
+                    flag = "Last";
+                    Log.d(LOG_TAG,"Loading navugations ,oncreate");
+                    FragmentTransaction xfragmentTransaction = mFragmentManager.beginTransaction();
+                    xfragmentTransaction.replace(R.id.containerView, new TabFragment()).addToBackStack("newfrag").commit();
+                }
+                else if (id == R.id.nav_item_overall) {
+                    flag = "Overall";
+                    Log.d(LOG_TAG,"Loading navugations ,oncreate");
+                    FragmentTransaction xfragmentTransaction = mFragmentManager.beginTransaction();
+                    xfragmentTransaction.replace(R.id.containerView, new TabFragment()).addToBackStack("newfrag").commit();
                 }
 
                 return false;
@@ -57,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
                 R.string.app_name);
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-
         mDrawerToggle.syncState();
     }
 
